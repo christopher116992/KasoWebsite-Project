@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drone Academy Login</title>
+  <style>
+    body { font-family: Arial;
+      background: #063279;
+      display: flex;
+      justify-content: center;
+      padding-top: 40px; }
+
+    .box { background: white;
+      width: 300px;
+      height: 500px;
+      padding: 25px;
+      border-top: 25px solid #d4a91c;
+      border-bottom: 25px solid #d4a91c;
+      border-radius: 25px; }
+
+
+    img { display: block;
+      width: 170px;
+      margin: 0 auto 10px; }
+
+    input, button { width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      box-sizing: border-box; }
+
+    button { background: #1f3f8f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer; }
+
+button:hover {
+   background: linear-gradient(135deg, #cfae19 0%, #043bdd 100%);
+}
+
+
+
+
+    a { color: #1f3f8f;
+      cursor: pointer;
+      font-size: 15px; }
+
+    h1 { text-align: center;
+      color: #1f3f8f;
+      font-family: Poppins;
+     }
+    
+
+    .hidden { display: none; }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <img src="logo.png" alt="Drone Academy">
+
+    <h1>Login Here</h1>
+
+    <!-- LOGIN -->
+    <div id="login">
+      <input id="user" placeholder="Username">
+      <input id="pass" type="password" placeholder="Password">
+      <button onclick="doLogin()">Login</button>
+      <p><a onclick="show('verify')">Forgot password?</a></p>
+      <p>No account? <a href="signup.html">Sign up here</a></p>
+    </div>
+
+    <!-- VERIFY -->
+    <div id="verify" class="hidden">
+      <input id="vuser" placeholder="Username">
+      <input id="code" placeholder="Code (demo: 123456)">
+      <button onclick="doVerify()">Verify</button>
+      <p><a onclick="show('login')">Back to login</a></p>
+    </div>
+
+    <!-- CHANGE PASSWORD -->
+    <div id="change" class="hidden">
+      <input id="p1" type="password" placeholder="New password">
+      <input id="p2" type="password" placeholder="Confirm password">
+      <button onclick="doChange()">Change Password</button>
+    </div>
+
+    <p id="msg"></p>
+  </div>
+
+  <script>
+    var resetUser = "";   // the account being reset
+    var resetCode = "";   // the code the user typed
+
+    // Send data to drone_db.php (the database file) and get the answer back
+    function send(data, done) {
+      var form = new FormData();
+      for (var key in data) form.append(key, data[key]);
+      fetch("drone_db.php", { method: "POST", body: form })
+        .then(function (r) { return r.json(); })
+        .then(done)
+        .catch(function () { say("Cannot reach the server. Open this page through http://localhost/"); });
+    }
+
+    function show(id) {
+      ["login", "verify", "change"].forEach(function (s) {
+        document.getElementById(s).classList.add("hidden");
+      });
+      document.getElementById(id).classList.remove("hidden");
+      say("");
+    }
+
+    function say(text) { document.getElementById("msg").innerText = text; }
+
+    // Login: the database checks the username and password
+    function doLogin() {
+      send({ action: "login", username: user.value, password: pass.value }, function (res) {
+        say(res.message);
+      });
+    }
+
+    // Forgot password step 1: the database checks the username and code
+    function doVerify() {
+      send({ action: "verify", username: vuser.value, code: code.value }, function (res) {
+        if (res.ok) {
+          resetUser = vuser.value;
+          resetCode = code.value;
+          show("change");
+        } else {
+          say(res.message);
+        }
+      });
+    }
+
+    // Forgot password step 2: the database saves the new password
+    function doChange() {
+      if (p1.value !== p2.value) { say("Passwords do not match."); return; }
+      send({ action: "reset", username: resetUser, code: resetCode, password: p1.value }, function (res) {
+        if (res.ok) show("login");
+        say(res.message);
+      });
+    }
+  </script>
+</body>
+</html>

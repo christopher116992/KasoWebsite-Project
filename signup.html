@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drone Academy Sign Up</title>
+  <style>
+    body { font-family: Arial;
+      background: #ac8710;
+      display: flex;
+      justify-content: center;
+      padding-top: 40px; }
+
+    .box { background: white;
+      width: 300px;
+      height: 500px;
+      padding: 25px;
+      border-top: 25px solid #111985;
+      border-bottom: 25px solid #1a1197;
+      border-radius: 25px; }
+
+    img { display: block;
+      width: 170px;
+      margin: 0 auto 10px; }
+      
+
+    input, button { width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      box-sizing: border-box; }
+
+    button { background: #1f3f8f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer; }
+    button:hover {
+   background: linear-gradient(135deg, #cfae19 0%, #043bdd 100%);
+}
+
+    a { color: #1f3f8f;
+      cursor: pointer;
+      font-size: 15px; }
+
+    h1 { text-align: center;
+      color: #1f3f8f;
+       font-family: Poppins;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <img src="logo.png" alt="Drone Academy">
+
+    <h1>Sign Up</h1>
+
+    <input id="newUser" placeholder="Choose a username">
+    <input id="newPass" type="password" placeholder="Choose a password">
+    <input id="again" type="password" placeholder="Confirm password">
+    <button onclick="doSignup()">Create Account</button>
+
+    <p>Already have an account? <a href="login.html">Login here</a></p>
+    <p id="msg"></p>
+  </div>
+
+  <script>
+    function say(text) { document.getElementById("msg").innerText = text; }
+
+    // Sign up: send the new account to drone_db.php, which saves it in kaso_db
+    function doSignup() {
+      if (newPass.value !== again.value) { say("Passwords do not match."); return; }
+
+      var form = new FormData();
+      form.append("action", "signup");
+      form.append("username", newUser.value);
+      form.append("password", newPass.value);
+
+      fetch("drone_db.php", { method: "POST", body: form })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          say(res.message);
+          if (res.ok) {
+            setTimeout(function () { window.location = "login.html"; }, 1500);
+          }
+        })
+        .catch(function () { say("Cannot reach the server. Open this page through http://localhost/"); });
+    }
+  </script>
+</body>
+</html>
